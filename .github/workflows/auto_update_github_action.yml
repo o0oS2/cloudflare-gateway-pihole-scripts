@@ -34,7 +34,7 @@ jobs:
         with:
           repository: "mrrfv/cloudflare-gateway-pihole-scripts"
           ref: "v1"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
           
       - name: Install Node.js
         uses: actions/setup-node@v4.0.3
