@@ -1,18 +1,12 @@
 name: Update Filter Lists
+
 on:
   schedule:
-    - cron: "0 20 * * 2,6"
+    - cron: "0 3 * * 1"
   push:
     branches:
       - main
   workflow_dispatch:
-
-# Thêm permissions cho toàn bộ workflow
-permissions:
-  contents: read
-  actions: write
-  issues: read
-  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,36 +18,31 @@ env:
 jobs:
   cgps:
     runs-on: ubuntu-latest
-    # Có thể thêm permissions riêng cho job này nếu cần
-    permissions:
-      contents: read
-      actions: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4
         with:
           repository: "mrrfv/cloudflare-gateway-pihole-scripts"
           ref: "v1"
-          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
-          
+
       - name: Install Node.js
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
-          
+
       - name: Install npm dependencies
         run: npm ci
-        
+
       - name: Download allowlists
         run: npm run download:allowlist
         env:
           ALLOWLIST_URLS: ${{ vars.ALLOWLIST_URLS }}
-          
+
       - name: Download blocklists
         run: npm run download:blocklist
         env:
           BLOCKLIST_URLS: ${{ vars.BLOCKLIST_URLS }}
-          
+
       - name: Delete old rules and lists
         run: npm run cloudflare-delete
         env:
@@ -61,7 +50,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_LIST_ITEM_LIMIT: ${{ secrets.CLOUDFLARE_LIST_ITEM_LIMIT }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          
+
       - name: Create new rules and lists
         run: npm run cloudflare-create
         env:
@@ -70,7 +59,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_LIST_ITEM_LIMIT: ${{ secrets.CLOUDFLARE_LIST_ITEM_LIMIT }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          
+
       - name: Send ping request
         if: env.PING_URL != ''
         run: |
@@ -79,19 +68,9 @@ jobs:
           PING_URL: ${{ secrets.PING_URL }}
 
   keepalive:
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
-      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-          
-      - name: Keepalive Workflow
-        uses: gautamkrishnar/keepalive-workflow@v2
-        with:
-          use_api: true
-          commit_message: "Automated commit by Keepalive Workflow to keep the repository active"
+      - uses: liskin/gh-workflow-keepalive@v1
