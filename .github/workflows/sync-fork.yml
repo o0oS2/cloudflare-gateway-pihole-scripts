@@ -22,7 +22,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         
         # Thêm upstream remote
-        git remote add upstream https://github.com/ORIGINAL_OWNER/ORIGINAL_REPO.git
+        git remote add upstream https://github.com/mrrfv/cloudflare-gateway-pihole-scripts.git
         
         # Fetch upstream changes
         git fetch upstream
