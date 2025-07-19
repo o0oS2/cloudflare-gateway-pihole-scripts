@@ -2,7 +2,7 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Chạy hàng ngày lúc 12:00 AM UTC
+    - cron: "0 18 * * 2,6"
   workflow_dispatch:      # Cho phép chạy thủ công
 
 jobs:
